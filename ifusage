@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# ifusage: Retrieve network usage in bytes
+
+update_bytes() {
+	VAL=`cat /sys/class/net/wlan0/statistics/{r,t}x_bytes`
+	RX_BYTES=`echo "$VAL" |head -n1`
+	TX_BYTES=`echo "$VAL" |tail -n1`
+	TOTAL_BYTES=`echo "$RX_BYTES+$TX_BYTES"|bc`
+}
+update_bytes
+
+case $1 in
+-l|--log-diff)
+	BYTES_PREV=`cat /tmp/ifusage-log-diff-$USER.log`
+	echo "$TOTAL_BYTES-$BYTES_PREV"|bc
+	echo "$TOTAL_BYTES" > /tmp/ifusage-log-diff-$USER.log
+	;;
+-d|--diff)
+	BYTES_PREV=$TOTAL_BYTES
+	while true; do
+		update_bytes
+		BYTES_DIFF=`echo "$TOTAL_BYTES-$BYTES_PREV"|bc`
+		printf "\r$BYTES_DIFF                "
+		BYTES_PREV=$TOTAL_BYTES
+		sleep 1
+	done
+	;;
+--total)
+	echo "$TOTAL_BYTES"
+	;;
+*)
+	echo "rx:$RX_BYTES tx:$TX_BYTES total:$TOTAL_BYTES"
+	;;
+esac
+
