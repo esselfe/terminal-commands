@@ -1,0 +1,22 @@
+#!/bin/bash
+
+GET_IPV4=1
+GET_IPV6=1
+if [[ "$1" = "-4" ]]; then
+	GET_IPV6=0
+elif [[ "$1" = "-6" ]]; then
+	GET_IPV4=0
+fi
+
+
+if [[ $GET_IPV4 -eq 1 ]]; then
+	{ curl -4 -s https://www.myip.com/ || { echo "IPv4 failed"; exit 1; }; } \
+		| grep -Eo '<span id="ip".*[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+.*span>' \
+		| sed 's/<s.*">//g;s@</span>@@'
+fi
+if [[ $GET_IPV6 -eq 1 ]]; then
+	{ curl -6 -s https://www.myip.com/ || { echo "IPv6 failed"; exit 1; }; } \
+		| grep -Eo '<span id="ip".*:+.*+*.*span>' \
+		| sed 's/<s.*">//g;s@</span>@@'
+fi
+
