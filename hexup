@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# This script converts lowercase hexadecimal notations to uppercase
+# and vice-versa. This file should be named hexup and a symlink
+# named hexdown pointing to hexup should be created in the same
+# directory where you put this script.
+# e.g. 'sudo cp ./hexup /usr/local/bin; sudo ln -sv hexup /usr/local/bin/hexdown'
+
+# Usage: hexup 0x18af10 10ffeb
+#        hexdown FFAC12
+
+if [ "$(basename $0)" = "hexdown" ]; then
+	echo "$@" | tr '[:upper:]' '[:lower:]'
+elif [ "$(basename $0)" = "hexup" ]; then
+	echo "$@" | tr '[:lower:]' '[:upper:]' | sed 's/0X/0x/g'
+fi
+
