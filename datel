@@ -1,0 +1,4 @@
+#!/bin/bash
+
+TZ=America/Montreal date
+

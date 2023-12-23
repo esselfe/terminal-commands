@@ -1,0 +1,19 @@
+#!/bin/bash
+
+case `basename $0` in
+dated)
+	date +%y%m%d
+	exit 0
+	;;
+dateh)
+	date +%y%m%d-%H%M%S
+	exit 0
+	;;
+daten)
+	date +%y%m%d-%H%M%S.%N
+	exit 0
+	;;
+esac
+
+date +%y%m%d-%H%M%S
+

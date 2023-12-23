@@ -1,0 +1,4 @@
+#!/bin/bash
+
+find /opt/bin /bin /sbin /usr/bin /usr/sbin -iname "*$@*"
+

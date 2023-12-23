@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# run as a daemon
+[ "$1" = "-d" ] && {
+	[[ -d /var/log/apache2 ]] && LOGDIR=/var/log/apache2 || {
+		[[ -d /var/log/httpd ]] && LOGDIR=/var/log/httpd
+	}
+	[[ -z $LOGDIR ]] && { echo "ban error: Cannot find /var/log/apache2 or /var/log/httpd"; exit 1; }
+
+	[[ -e "$LOGDIR/access_log" ]] && LOGFILE=$LOGDIR/access_log || {
+		[[ -e "$LOGDIR/access.log" ]] && LOGFILE=$LOGDIR/access.log
+	}
+	[[ -z "$LOGFILE" ]] && { echo "ban error: Cannot find $LOGDIR/access_log or $LOGDIR/access.log"; exit 1; }
+
+	$0 -a
+	CNT=0
+	MIN=$(date +%M)
+	MINPREV=$MIN
+	IP=1.1.1.1
+	IPPREV=$IP
+	tail -n15 -f $LOGFILE | while read LINE; do
+		IP=$(echo "$LINE" | awk '{ print $1 }')
+		if [ "$IP" = "$IPPREV" ]; then
+			MIN=$(echo "$LINE" | awk -F: '{ print $3 }')
+			CMD=$(echo "$LINE" | awk '{ print $6 }')
+			if [ $MIN -eq $MINPREV ]; then
+				if [ "$CMD" = "\"GET" -o "$CMD" = "\"POST" -o "$CMD" = "\"CONNECT" ]; then
+					STATUS=$(echo "$LINE" | awk '{ print $9 }')
+					[ $STATUS -eq 404 -o $STATUS -eq 405 ] && ((++CNT))
+				elif [ "$CMD" = "\"-\"" ]; then
+					((++CNT))
+				fi
+			else
+				MINPREV=$MIN
+				CNT=0
+			fi
+			[ $CNT -ge 9 ] && {
+				/abin/ban "$IP"
+				CNT=0
+			}
+		else
+			IPPREV=$IP
+			CNT=0
+		fi
+	done
+	exit 0
+}
+
+[ $UID -eq 0 ] && SUDOCMD="" || SUDOCMD="sudo"
+
+[ "$1" = "-a" ] && {
+	[ $DEBUG ] && echo -n "Flushing iptables INPUT table..."
+	$SUDOCMD iptables -F sshban
+	[ $DEBUG ] && echo " OK"
+	#$SUDOCMD iptables -A INPUT -p icmp -j LOG --log-prefix "ping "
+	[ $DEBUG ] && echo "Banning $(wc -l /abin/ban.lst | awk '{ print $1 }') IPs..."
+	for ip in `cat /abin/ban.lst`; do
+		[ $DEBUG ] && echo "ban $ip"
+		$SUDOCMD iptables -A sshban -s $ip -j DROP
+	done
+}
+
+if [ "$(basename $0)" = "unban" ]; then
+	echo "$1" | grep -E "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" >/dev/null && {
+		grep "$1" /abin/ban.lst >/dev/null && {
+			$SUDOCMD iptables -D sshban -s $1 -j DROP &&
+				sed -i "/$1/d" /abin/ban.lst
+		}
+	}
+	exit 0
+else # ban
+	echo "$1" | grep -E "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" >/dev/null && {
+			$SUDOCMD iptables -A sshban -s $1 -j DROP &&
+				echo "$1" >>/abin/ban.lst
+	}
+fi
+

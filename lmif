@@ -1,0 +1,4 @@
+#!/bin/bash
+
+grep -i "$@.*:" /var/state/lunar/module.index
+

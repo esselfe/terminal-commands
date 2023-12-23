@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo -en "\033]0;$PPID:$(echo `tty`|sed 's@/dev/@@'):$@\007"
+

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for m in $@; do
+	echo "$m $(lvu installed $m) $(lvu version $m)"
+done
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+lsblk -o NAME,TYPE,FSTYPE,SIZE,FSUSED,FSAVAIL,LABEL,MOUNTPOINT,UUID $@ | sed '/^nbd[0-9]*/d'
+

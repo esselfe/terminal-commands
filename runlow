@@ -1,0 +1,4 @@
+#!/bin/bash
+
+systemd-run -p CPUQuota="80%" --scope -- bash -c "$@"
+

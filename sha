@@ -1,0 +1,14 @@
+#!/bin/bash
+
+case $1 in
+1)
+	sha1sum $2 |awk '{ print $1 }'
+	;;
+256)
+	sha256sum $2 |awk '{ print $1 }'
+	;;
+512)
+	sha512sum $2 |awk '{ print $1 }'
+	;;
+esac
+

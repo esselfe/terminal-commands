@@ -1,0 +1,15 @@
+#!/bin/bash
+
+LDEP_PID=$$
+touch /tmp/ldep.$LDEP_PID
+for m in $@; do
+	for d in `find /var/lib/lunar/moonbase -name DEPENDS`; do
+		grep -H -e "depends.*$m$" -e 'depends.*$m ' $d
+		#|awk -F: '{ print $1 }'`; do
+		#MOD=`basename $(dirname $d)`
+		#lvu installed $MOD 2>&1 >/dev/null && { echo "$m: $MOD" >>/tmp/ldep.$LDEP_PID; }
+	done
+#	sort /tmp/ldep.$LDEP_PID |uniq
+#	rm /tmp/ldep.$LDEP_PID
+done
+
