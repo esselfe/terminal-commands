@@ -4,7 +4,7 @@ cd /var/lib/lunar/moonbase
 
 for m in $@; do
 	for d in `find . -name DEPENDS | sed 's/^.\///g'`; do
-		grep -H -e "depends[[:space:]]*$m$" -e "depends[[:space:]]*$m[[:space:]]*" $d
+		grep -H -e "depends[[:space:]]*$m$" -e "depends[[:space:]]*$m[[:space:]]+" $d
 	done
 done
 
